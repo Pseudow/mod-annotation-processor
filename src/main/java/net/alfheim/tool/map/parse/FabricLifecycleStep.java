@@ -45,7 +45,7 @@ public class FabricLifecycleStep implements LifecycleStep<String> {
         if(this.annotation == null)
             return null;
 
-        final Map<Object, Object> fields = new LinkedHashMap<>();
+        final Map<String, Object> fields = new LinkedHashMap<>();
         fields.put("schemaVersion", this.annotation.schemaVersion().getValue());
         fields.put("id", this.annotation.id());
         fields.put("version", this.annotation.version());
@@ -55,8 +55,31 @@ public class FabricLifecycleStep implements LifecycleStep<String> {
         fields.put("icon", this.annotation.icon());
         fields.put("license", this.annotation.license());
         fields.put("environment", this.annotation.environment());
+        fields.put("entrypoints", this.generateEntryPointsDictionary());
 
+        this.generateRelationDictionary().forEach(entry -> fields.put(entry.getKey(), entry.getValue()));
+
+        try {
+            final FileObject config = processingEnv.getFiler()
+                    .createResource(StandardLocation.CLASS_OUTPUT, "", FABRIC_CONFIG_FILE);
+
+            try(final Writer writer = config.openWriter()) {
+                JSONObject.writeJSONString(fields, writer);
+
+                return this.className;
+            } catch(Exception exception) {
+                throw new BuildProjectException("Couldn't write into fabric config file!", exception);
+            }
+
+
+        } catch (IOException exception) {
+            throw new BuildProjectException("Couldn't create a new fabric config file!", exception);
+        }
+    }
+
+    private Map<String, Collection<String>> generateEntryPointsDictionary() {
         final Map<String, Collection<String>> entryPoints = new HashMap<>();
+
         final Collection<String> clientEntryPoints = new ArrayList<>();
         final Collection<String> serverEntryPoints = new ArrayList<>();
         final Collection<String> mainEntryPoints = new ArrayList<>();
@@ -78,23 +101,20 @@ public class FabricLifecycleStep implements LifecycleStep<String> {
         entryPoints.put("server", serverEntryPoints);
         entryPoints.put("main", mainEntryPoints);
 
-        fields.put("entrypoints", entryPoints);
+        return entryPoints;
+    }
 
-        try {
-            final FileObject config = processingEnv.getFiler()
-                    .createResource(StandardLocation.CLASS_OUTPUT, "", FABRIC_CONFIG_FILE);
+    private Collection<Map.Entry<String, Map<String, String>>> generateRelationDictionary() {
+        final Collection<Map.Entry<String, Map<String, String>>> relations = new ArrayList<>();
 
-            try(final Writer writer = config.openWriter()) {
-                JSONObject.writeJSONString(fields, writer);
+        final Map<String, String> depends = new LinkedHashMap<>();
+        depends.put("fabricloader", ">=0.14.21");
+        depends.put("fabric-api", "*");
+        depends.put("minecraft", "~1.20");
+        depends.put("java", ">=17");
 
-                return this.className;
-            } catch(Exception exception) {
-                throw new BuildProjectException("Couldn't write into fabric config file!", exception);
-            }
+        relations.add(new AbstractMap.SimpleEntry<>("depends", depends));
 
-
-        } catch (IOException exception) {
-            throw new BuildProjectException("Couldn't create a new fabric config file!", exception);
-        }
+        return relations;
     }
 }

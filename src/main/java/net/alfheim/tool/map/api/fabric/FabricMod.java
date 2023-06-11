@@ -39,5 +39,5 @@ public @interface FabricMod {
 
     String license() default "CC0-1.0";
 
-    String icon() default "assets\\modid\\icon.png";
+    String icon() default "assets/modid/icon.png";
 }
