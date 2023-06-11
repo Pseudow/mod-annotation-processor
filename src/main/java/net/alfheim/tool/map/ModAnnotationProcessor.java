@@ -22,7 +22,7 @@ import java.util.Set;
 @SupportedAnnotationTypes(value = {
         "net.alfheim.tool.map.api.fabric.FabricMod"
 })
-@SupportedSourceVersion(SourceVersion.RELEASE_18)
+@SupportedSourceVersion(SourceVersion.RELEASE_17)
 public class ModAnnotationProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
