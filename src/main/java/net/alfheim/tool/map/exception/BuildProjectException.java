@@ -6,6 +6,6 @@ public class BuildProjectException extends Exception {
     }
 
     public BuildProjectException(String errorMessage, Exception exception) {
-        super(errorMessage, exception);
+        super(errorMessage + " " +  exception.getMessage());
     }
 }

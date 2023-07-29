@@ -7,9 +7,18 @@ created it.
 This tool allows to **reduce the file and code lines** count by replacing some fabric
 repetitive tasks into **annotations that are processed during compile time**.
 
+### Fabric config file
+Fabric annotation @FabricMod should always be located in the main sourceset !
+
+### Mixin
+
 # Todo
 ### Commands
-### Events
+### Mixin
+Add mixinEntry auto registration, when the @Mixin annotation from fabric is specified
+on a java class.
+By making sure all mixinEntry in the same package gets registered
+in the same mixinEntry file.
 
 
 # Developers

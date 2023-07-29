@@ -18,7 +18,7 @@ import java.io.Writer;
 import java.util.*;
 import java.util.function.BiConsumer;
 
-public class FabricLifecycleStep implements LifecycleStep<String> {
+public class FabricLifecycleStep implements LifecycleStep<FileObject> {
     public static final String FABRIC_CONFIG_FILE = "fabric.mod.json";
     private String className;
     private FabricMod annotation;
@@ -41,7 +41,7 @@ public class FabricLifecycleStep implements LifecycleStep<String> {
     }
 
     @Override
-    public String process(ProcessingEnvironment processingEnv) throws BuildProjectException {
+    public FileObject process(ProcessingEnvironment processingEnv) throws BuildProjectException {
         if(this.annotation == null)
             return null;
 
@@ -56,6 +56,7 @@ public class FabricLifecycleStep implements LifecycleStep<String> {
         fields.put("license", this.annotation.license());
         fields.put("environment", this.annotation.environment());
         fields.put("entrypoints", this.generateEntryPointsDictionary());
+        fields.put("mixins", Collections.emptyList());
 
         this.generateRelationDictionary().forEach(entry -> fields.put(entry.getKey(), entry.getValue()));
 
@@ -66,7 +67,9 @@ public class FabricLifecycleStep implements LifecycleStep<String> {
             try(final Writer writer = config.openWriter()) {
                 JSONObject.writeJSONString(fields, writer);
 
-                return this.className;
+                writer.close();
+
+                return config;
             } catch(Exception exception) {
                 throw new BuildProjectException("Couldn't write into fabric config file!", exception);
             }
