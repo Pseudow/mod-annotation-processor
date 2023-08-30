@@ -3,9 +3,6 @@ plugins {
     id("maven-publish")
 }
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
-
 group = "net.alfheim.tool"
 version = "1.0.1"
 
@@ -16,6 +13,11 @@ repositories {
 dependencies {
     implementation "com.googlecode.json-simple:json-simple:1.1"
     // implementation "com.squareup:javapoet:1.13.0"
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 tasks.withType(JavaCompile).configureEach {
