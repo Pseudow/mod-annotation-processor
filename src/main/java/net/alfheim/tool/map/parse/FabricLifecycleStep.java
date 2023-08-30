@@ -13,10 +13,14 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
+import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.function.BiConsumer;
+
+import static net.alfheim.tool.map.parse.MixinLifecycleStep.MIXIN_CONFIG_FILE_SUFFIX;
 
 public class FabricLifecycleStep implements LifecycleStep<FileObject> {
     public static final String FABRIC_CONFIG_FILE = "fabric.mod.json";
@@ -56,7 +60,7 @@ public class FabricLifecycleStep implements LifecycleStep<FileObject> {
         fields.put("license", this.annotation.license());
         fields.put("environment", this.annotation.environment());
         fields.put("entrypoints", this.generateEntryPointsDictionary());
-        fields.put("mixins", Collections.emptyList());
+        fields.put("mixins", this.lookUpForMixinFiles(processingEnv));
 
         this.generateRelationDictionary().forEach(entry -> fields.put(entry.getKey(), entry.getValue()));
 
@@ -78,6 +82,47 @@ public class FabricLifecycleStep implements LifecycleStep<FileObject> {
         } catch (IOException exception) {
             throw new BuildProjectException("Couldn't create a new fabric config file!", exception);
         }
+    }
+
+    private Collection<String> lookUpForMixinFiles(ProcessingEnvironment processingEnv) {
+        final Collection<String> mixins = new ArrayList<>();
+
+        try {
+            final FileObject currentSourceSetFolder = processingEnv.getFiler()
+                    .createResource(StandardLocation.CLASS_OUTPUT, "", "randomname.txt");
+            final Path path = Path.of(currentSourceSetFolder.toUri().resolve("../"));
+
+            currentSourceSetFolder.delete();
+
+            final File file = path.toFile();
+
+            if(!file.isDirectory())
+                return mixins;
+
+            if(file.listFiles() == null)
+                return mixins;
+
+            for (File folder : file.listFiles()) {
+
+                if(!folder.isDirectory())
+                    continue;
+
+                if(folder.listFiles() == null)
+                    continue;
+
+                for (File file2 : folder.listFiles()) {
+                    final String fileName = file2.getName();
+
+                    if (fileName.contains(MIXIN_CONFIG_FILE_SUFFIX)) {
+                        mixins.add(fileName);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return mixins;
     }
 
     private Map<String, Collection<String>> generateEntryPointsDictionary() {

@@ -124,15 +124,14 @@ public class MixinLifecycleStep implements LifecycleStep<Void> {
                     .createResource(StandardLocation.CLASS_OUTPUT, "", "randomname.txt");
 
             final Path path = Path.of(currentSourceSetFolder.toUri()
-                    .resolve("../")
-                    .resolve("main/")
-                    .resolve(FabricLifecycleStep.FABRIC_CONFIG_FILE)
+                            .resolve("../")
+                            .resolve("main/")
+                            .resolve(FabricLifecycleStep.FABRIC_CONFIG_FILE)
             );
-            final File file = new File(path.toString());
 
             currentSourceSetFolder.delete();
 
-            return file;
+            return path.toFile();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
