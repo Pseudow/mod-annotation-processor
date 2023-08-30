@@ -25,7 +25,7 @@ public @interface FabricMod {
      */
     String version();
 
-    Side side();
+    Side side() default Side.BOTH;
 
     Entrypoint[] entryPoints() default {};
 
